@@ -1,12 +1,14 @@
 # Content Creation App: AI CareerTube Studio
 
-A React + Tailwind web app for generating YouTube content that helps job seekers succeed in the AI-driven tech world. The current build is a polished front-end prototype with mocked AI outputs and clear integration points for OpenAI, Supabase, n8n, ElevenLabs, Canva, CapCut, and YouTube.
+A React + Tailwind web app for generating YouTube-ready career videos for job seekers in the AI-driven tech world. The app lets creators choose output dimensions, generate scripts and scenes, prepare captions, voiceover, thumbnails, metadata, and assemble a publish-ready video package.
 
 ## What It Includes
 
 - Trend research dashboard for Reddit, LinkedIn, YouTube, GitHub, hiring reports, job descriptions, and interview experiences.
+- Dimension-aware video generator for YouTube long-form, YouTube Shorts, square clips, and custom canvas sizes.
 - Modular AI agent architecture for research, hooks, scripts, thumbnails, SEO, Shorts, interview insights, career coaching, and upload preparation.
 - Long-form video package with titles, hook, full script structure, scene prompts, Canva prompts, voiceover notes, subtitles, B-roll, thumbnail prompt, SEO description, hashtags, keywords, and tags.
+- YouTube-ready export checklist for MP4, captions, thumbnail, voiceover, and metadata.
 - Shorts repurposing cards for turning long videos into 3 to 5 under-60-second clips.
 - Pre-publish approval gate so uploading stays manual.
 - Dark creator-studio UI with responsive layouts.

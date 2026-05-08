@@ -25,6 +25,7 @@ import {
   Sparkles,
   Tags,
   Upload,
+  Video,
   Wand2,
   Youtube,
   Zap
@@ -78,6 +79,13 @@ const formatOptions = [
   { id: "long", label: "Long-form", detail: "5 to 10 min" },
   { id: "shorts", label: "Shorts", detail: "Under 60 sec" },
   { id: "both", label: "Full package", detail: "Video plus Shorts" }
+];
+
+const dimensionPresets = [
+  { id: "youtube", label: "YouTube Video", size: "1920 x 1080", width: 1920, height: 1080, ratio: "16:9", use: "Long-form upload" },
+  { id: "short", label: "YouTube Short", size: "1080 x 1920", width: 1080, height: 1920, ratio: "9:16", use: "Shorts feed" },
+  { id: "square", label: "Square Clip", size: "1080 x 1080", width: 1080, height: 1080, ratio: "1:1", use: "Repurposed social cut" },
+  { id: "custom", label: "Custom", size: "Manual", width: 1280, height: 720, ratio: "Custom", use: "Creator-defined render" }
 ];
 
 const sampleInsights = [
@@ -154,15 +162,39 @@ const generatedPackage = {
   ]
 };
 
+const exportAssets = [
+  "Rendered MP4 video with selected dimensions",
+  "SRT caption file",
+  "Voiceover script for ElevenLabs",
+  "Canva scene prompt list",
+  "CapCut editing checklist",
+  "YouTube title, description, hashtags, and tags",
+  "Thumbnail text and design prompt"
+];
+
 function App() {
   const [selectedTopic, setSelectedTopic] = useState(topics[0]);
   const [format, setFormat] = useState("both");
   const [approved, setApproved] = useState(false);
   const [activeTab, setActiveTab] = useState("script");
   const [tone, setTone] = useState(72);
+  const [dimension, setDimension] = useState("short");
+  const [customWidth, setCustomWidth] = useState(1280);
+  const [customHeight, setCustomHeight] = useState(720);
 
   const completion = useMemo(() => (approved ? 92 : 74), [approved]);
   const currentFormat = formatOptions.find((item) => item.id === format);
+  const selectedDimension = dimensionPresets.find((item) => item.id === dimension);
+  const renderSpec = useMemo(() => {
+    const width = dimension === "custom" ? Number(customWidth) || 1280 : selectedDimension.width;
+    const height = dimension === "custom" ? Number(customHeight) || 720 : selectedDimension.height;
+    return {
+      width,
+      height,
+      ratio: dimension === "custom" ? `${width}:${height}` : selectedDimension.ratio,
+      label: dimension === "custom" ? "Custom YouTube render" : selectedDimension.label
+    };
+  }, [customHeight, customWidth, dimension, selectedDimension]);
 
   return (
     <main className="min-h-screen bg-[#070b12] text-slate-100">
@@ -205,7 +237,7 @@ function App() {
           <header className="topbar">
             <div>
               <p className="eyebrow">Career mentor plus YouTube automation studio</p>
-              <h2>Generate job-seeker videos built for trust, clarity, and retention.</h2>
+              <h2>Generate YouTube-ready career videos in the exact dimensions you need.</h2>
             </div>
             <div className="top-actions">
               <button className="icon-button" aria-label="Refresh research">
@@ -213,7 +245,7 @@ function App() {
               </button>
               <button className="primary-button">
                 <Wand2 size={18} />
-                Generate package
+                Generate video
               </button>
             </div>
           </header>
@@ -223,7 +255,7 @@ function App() {
               <div className="section-heading">
                 <div>
                   <p className="eyebrow">Video brief</p>
-                  <h3>Content Generator</h3>
+                  <h3>Video Generator</h3>
                 </div>
                 <span className="pill">{currentFormat.detail}</span>
               </div>
@@ -251,6 +283,34 @@ function App() {
               <label className="field-label" htmlFor="tone">Humor and motivation balance</label>
               <input id="tone" className="slider" type="range" min="0" max="100" value={tone} onChange={(event) => setTone(event.target.value)} />
 
+              <label className="field-label">Output dimensions</label>
+              <div className="dimension-grid">
+                {dimensionPresets.map((preset) => (
+                  <button
+                    key={preset.id}
+                    className={dimension === preset.id ? "dimension-card active" : "dimension-card"}
+                    onClick={() => setDimension(preset.id)}
+                  >
+                    <strong>{preset.label}</strong>
+                    <span>{preset.size}</span>
+                    <small>{preset.use}</small>
+                  </button>
+                ))}
+              </div>
+
+              {dimension === "custom" && (
+                <div className="custom-size-row">
+                  <label>
+                    Width
+                    <input value={customWidth} min="320" type="number" onChange={(event) => setCustomWidth(event.target.value)} />
+                  </label>
+                  <label>
+                    Height
+                    <input value={customHeight} min="320" type="number" onChange={(event) => setCustomHeight(event.target.value)} />
+                  </label>
+                </div>
+              )}
+
               <div className="audience-row">
                 {audience.map((item) => (
                   <span key={item}>{item}</span>
@@ -261,7 +321,7 @@ function App() {
             <div className="studio-panel output-panel">
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">Ready package</p>
+                  <p className="eyebrow">YouTube-ready render</p>
                   <h3>{selectedTopic}</h3>
                 </div>
                 <div className="score-ring" style={{ "--score": `${completion}%` }}>
@@ -269,9 +329,18 @@ function App() {
                 </div>
               </div>
               <div className="metric-grid">
-                <Metric label="CTR angle" value="Career anxiety" icon={Rocket} />
-                <Metric label="Retention plan" value="Fast examples" icon={CalendarCheck} />
-                <Metric label="Trust level" value="Source backed" icon={BadgeCheck} />
+                <Metric label="Canvas" value={`${renderSpec.width} x ${renderSpec.height}`} icon={Video} />
+                <Metric label="Aspect ratio" value={renderSpec.ratio} icon={CalendarCheck} />
+                <Metric label="Upload status" value="YouTube ready" icon={BadgeCheck} />
+              </div>
+              <div className="video-preview-shell">
+                <div className="video-preview" style={{ aspectRatio: `${renderSpec.width} / ${renderSpec.height}` }}>
+                  <div>
+                    <span>{renderSpec.label}</span>
+                    <strong>{renderSpec.width} x {renderSpec.height}</strong>
+                    <small>MP4 + captions + metadata</small>
+                  </div>
+                </div>
               </div>
               <div className="approval-strip">
                 <div>
@@ -319,10 +388,10 @@ function App() {
           <section className="pipeline-band">
             <div>
               <p className="eyebrow">Free-tool video pipeline</p>
-              <h3>Script to publish-ready package</h3>
+              <h3>Dimension-aware video export</h3>
             </div>
             <div className="pipeline-steps">
-              {["Research", "Script", "Voiceover", "Canva scenes", "CapCut edit", "YouTube review"].map((step, index) => (
+              {["Research", "Script", "Scenes", "Voiceover", "Render", "Upload pack"].map((step, index) => (
                 <article key={step}>
                   <span>{index + 1}</span>
                   <strong>{step}</strong>
@@ -334,13 +403,13 @@ function App() {
           <section className="main-grid">
             <div className="studio-panel">
               <div className="tabs" role="tablist" aria-label="Generated package">
-                {["script", "video", "seo", "shorts"].map((tab) => (
+                {["script", "video", "export", "seo", "shorts"].map((tab) => (
                   <button key={tab} className={activeTab === tab ? "tab active" : "tab"} onClick={() => setActiveTab(tab)}>
                     {tab}
                   </button>
                 ))}
               </div>
-              <PackageView activeTab={activeTab} />
+              <PackageView activeTab={activeTab} renderSpec={renderSpec} />
             </div>
 
             <div className="studio-panel agents-panel">
@@ -371,7 +440,7 @@ function App() {
             <div>
               <p className="eyebrow">YouTube Upload Assistant</p>
               <h3>Manual publish gate stays under creator control.</h3>
-              <p>After approval, the assistant prepares title, description, hashtags, tags, thumbnail, captions, subtitles, and voiceover files for YouTube Studio.</p>
+              <p>After approval, the assistant prepares the rendered MP4 spec, title, description, hashtags, tags, thumbnail, captions, subtitles, and voiceover files for YouTube Studio.</p>
             </div>
             <button className="primary-button" disabled={!approved}>
               <Upload size={18} />
@@ -412,7 +481,7 @@ function Metric({ label, value, icon: Icon }) {
   );
 }
 
-function PackageView({ activeTab }) {
+function PackageView({ activeTab, renderSpec }) {
   if (activeTab === "video") {
     return (
       <div className="package-content">
@@ -420,6 +489,36 @@ function PackageView({ activeTab }) {
         <ContentBlock title="Canva slide prompts" items={generatedPackage.canva} />
         <ContentBlock title="Voiceover direction" items={[generatedPackage.voiceover]} />
         <ContentBlock title="B-roll suggestions" items={generatedPackage.broll} />
+      </div>
+    );
+  }
+
+  if (activeTab === "export") {
+    return (
+      <div className="package-content">
+        <div className="export-spec">
+          <div>
+            <span>Final video dimensions</span>
+            <h4>{renderSpec.width} x {renderSpec.height}</h4>
+            <p>Export as MP4, H.264 video, AAC audio, 30fps or 60fps, with safe captions inside the visible frame.</p>
+          </div>
+          <div className="export-badge">
+            <Video size={30} />
+            <strong>{renderSpec.ratio}</strong>
+          </div>
+        </div>
+        <ContentBlock title="YouTube-ready assets" items={exportAssets} />
+        <ContentBlock
+          title="Render checklist"
+          items={[
+            `Canvas size locked to ${renderSpec.width} x ${renderSpec.height}`,
+            "Captions stay inside mobile safe zones",
+            "Thumbnail text is readable at small size",
+            "First 3 seconds contain motion, face, or bold caption",
+            "Audio peaks are clean and voice is louder than music",
+            "Export package is reviewed before upload"
+          ]}
+        />
       </div>
     );
   }
