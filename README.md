@@ -1,4 +1,4 @@
-# AI CareerTube Studio
+# Content Creation App: AI CareerTube Studio
 
 A React + Tailwind web app for generating YouTube content that helps job seekers succeed in the AI-driven tech world. The current build is a polished front-end prototype with mocked AI outputs and clear integration points for OpenAI, Supabase, n8n, ElevenLabs, Canva, CapCut, and YouTube.
 
